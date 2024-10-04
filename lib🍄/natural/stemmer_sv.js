@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2011, Chris Umbel
+Copyright (c) 2017, Dogan Yazar
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,20 +22,43 @@ THE SOFTWARE.
 
 'use strict'
 
-exports.PorterStemmer = require('./porter_stemmer')
-exports.PorterStemmerFa = require('./porter_stemmer_fa')
-exports.PorterStemmerFr = require('./porter_stemmer_fr')
-exports.CarryStemmerFr = require('./Carry')
-exports.PorterStemmerDe = require('./porter_stemmer_de')
-exports.PorterStemmerUk = require('./porter_stemmer_uk')
-exports.PorterStemmerRu = require('./porter_stemmer_ru')
-exports.PorterStemmerEs = require('./porter_stemmer_es')
-exports.PorterStemmerIt = require('./porter_stemmer_it')
-exports.PorterStemmerNo = require('./porter_stemmer_no')
-exports.PorterStemmerSv = require('./porter_stemmer_sv')
-exports.PorterStemmerPt = require('./porter_stemmer_pt')
-exports.PorterStemmerNl = require('./porter_stemmer_nl')
-exports.LancasterStemmer = require('./lancaster_stemmer')
-exports.StemmerJa = require('./stemmer_ja')
-exports.StemmerId = require('./indonesian/stemmer_id')
-exports.Token = require('./token')
+const stopwords = require('../util/stopwords_sv')
+const Tokenizer = require('../tokenizers/aggressive_tokenizer_sv')
+
+module.exports = function () {
+  const stemmer = this
+
+  stemmer.stem = function (token) {
+    return token
+  }
+
+  stemmer.addStopWord = function (stopWord) {
+    stopwords.words.push(stopWord)
+  }
+
+  stemmer.addStopWords = function (moreStopWords) {
+    stopwords.words = stopwords.words.concat(moreStopWords)
+  }
+
+  stemmer.tokenizeAndStem = function (text, keepStops) {
+    const stemmedTokens = []
+
+    new Tokenizer().tokenize(text).forEach(function (token) {
+      if (keepStops || stopwords.words.indexOf(token.toLowerCase()) === -1) { stemmedTokens.push(stemmer.stem(token)) }
+    })
+
+    return stemmedTokens
+  }
+
+  /*
+  stemmer.attach = function () {
+    String.prototype.stem = function () {
+      return stemmer.stem(this)
+    }
+
+    String.prototype.tokenizeAndStem = function (keepStops) {
+      return stemmer.tokenizeAndStem(this, keepStops)
+    }
+  }
+  */
+}

@@ -1,5 +1,6 @@
+
 /*
-Copyright (c) 2011, Chris Umbel
+Copyright (c) 2023, Hugo W.L. ter Doest
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,20 +23,32 @@ THE SOFTWARE.
 
 'use strict'
 
-exports.PorterStemmer = require('./porter_stemmer')
-exports.PorterStemmerFa = require('./porter_stemmer_fa')
-exports.PorterStemmerFr = require('./porter_stemmer_fr')
-exports.CarryStemmerFr = require('./Carry')
-exports.PorterStemmerDe = require('./porter_stemmer_de')
-exports.PorterStemmerUk = require('./porter_stemmer_uk')
-exports.PorterStemmerRu = require('./porter_stemmer_ru')
-exports.PorterStemmerEs = require('./porter_stemmer_es')
-exports.PorterStemmerIt = require('./porter_stemmer_it')
-exports.PorterStemmerNo = require('./porter_stemmer_no')
-exports.PorterStemmerSv = require('./porter_stemmer_sv')
-exports.PorterStemmerPt = require('./porter_stemmer_pt')
-exports.PorterStemmerNl = require('./porter_stemmer_nl')
-exports.LancasterStemmer = require('./lancaster_stemmer')
-exports.StemmerJa = require('./stemmer_ja')
-exports.StemmerId = require('./indonesian/stemmer_id')
-exports.Token = require('./token')
+const stopwords = require('stopwords-iso')
+const englishStopWords = stopwords.de
+const Tokenizer = require('../tokenizers/aggressive_tokenizer_de')
+
+class Stemmer {
+  stem (token) {
+    return token
+  }
+
+  tokenizeAndStem (text, keepStops) {
+    const stemmedTokens = []
+
+    const that = this
+    new Tokenizer().tokenize(text).forEach(function (token) {
+      if (keepStops || englishStopWords.indexOf(token) === -1) {
+        let resultToken = token.toLowerCase()
+        // if (resultToken.match(new RegExp('[a-záéíóúüñ0-9]+', 'gi'))) {
+        if (resultToken.match(/[a-záéíóúüñ0-9]+/gi)) {
+          resultToken = that.stem(resultToken)
+        }
+        stemmedTokens.push(resultToken)
+      }
+    })
+
+    return stemmedTokens
+  }
+}
+
+module.exports = Stemmer
